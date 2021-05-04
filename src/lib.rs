@@ -1,11 +1,11 @@
 
 use serde_json::Value;
 
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct Currency {
-    pub code: &'static str,
-    pub symbol: &'static str,
-    pub description: &'static str,
+    pub code: String,
+    pub symbol: String,
+    pub description: String,
     pub rate: f64,
 }
 
@@ -35,9 +35,9 @@ impl Currency {
         };
 
         Ok(Self {
-            code: code.as_str(),
-            symbol: symbol.as_str(),
-            description: description.as_str(),
+            code: code.to_owned(),
+            symbol: symbol.to_owned(),
+            description: description.to_owned(),
             rate,
         })
     }
@@ -64,7 +64,7 @@ impl std::fmt::Display for Error {
     }
 }
 
-#[derive(Clone, PartialEq, Debug, Copy)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct Bitcoin {
     pub usd: Currency,
     pub gbp: Currency,
@@ -72,7 +72,7 @@ pub struct Bitcoin {
 }
 
 impl Bitcoin {
-    pub async fn get() -> Result<Self, Error> {
+    pub async fn get() -> Result<String, Error> {
         let data = match surf::get("https://api.coindesk.com/v1/bpi/currentprice.json").recv_string().await {
             Ok(data) => data,
             Err(error) => return Err(Error::Http(error.to_string())),
@@ -90,8 +90,7 @@ impl Bitcoin {
             _ => return Err(Error::Format(String::from("Couldn't find usd"))),
         };
 
-        println!("usd_raw_data: {:?}", usd_raw_data);
-        std::process::exit(1);
+        return Ok(usd_raw_data.to_string().to_owned());
 
         // let usd = Currency::get()
 
