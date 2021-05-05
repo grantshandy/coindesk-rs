@@ -10,23 +10,23 @@ pub struct Currency {
 }
 
 impl Currency {
-    pub fn get(data: serde_json::Value) -> Result<Self, Error> {
-        let code = match &data["code"] {
+    pub fn get(ctype: &str, data: serde_json::Value) -> Result<Self, Error> {
+        let code = match &data["bpi"][ctype]["code"] {
             Value::String(output) => output,
             _ => return Err(Error::Format(String::from("Couldn't find code"))),
         };
 
-        let symbol = match &data["symbol"] {
+        let symbol = match &data["bpi"][ctype]["symbol"] {
             Value::String(output) => output,
             _ => return Err(Error::Format(String::from("Couldn't find symbol"))),
         };
 
-        let description = match &data["description"] {
+        let description = match &data["bpi"][ctype]["description"] {
             Value::String(output) => output,
             _ => return Err(Error::Format(String::from("Couldn't find description"))),
         };
 
-        let rate = match &data["rate"] {
+        let rate = match &data["bpi"][ctype]["rate_float"] {
             Value::Number(output) => match output.as_f64() {
                 Some(num) => num,
                 None => return Err(Error::Format(String::from("Rate is not f64"))),
@@ -72,7 +72,7 @@ pub struct Bitcoin {
 }
 
 impl Bitcoin {
-    pub async fn get() -> Result<String, Error> {
+    pub async fn get() -> Result<Self, Error> {
         let data = match surf::get("https://api.coindesk.com/v1/bpi/currentprice.json").recv_string().await {
             Ok(data) => data,
             Err(error) => return Err(Error::Http(error.to_string())),
@@ -85,21 +85,14 @@ impl Bitcoin {
             }
         };
 
-        let usd_raw_data = match &parsed_json["usd"] {
-            Value::Object(output) => output,
-            _ => return Err(Error::Format(String::from("Couldn't find usd"))),
-        };
+        let usd = Currency::get("USD", parsed_json.clone())?;
+        let gbp = Currency::get("GBP", parsed_json.clone())?;
+        let eur = Currency::get("EUR", parsed_json.clone())?;
 
-        return Ok(usd_raw_data.to_string().to_owned());
-
-        // let usd = Currency::get()
-
-        // println!("{}", data);
-
-        // Ok(Self {
-        //     usd,
-        //     gbp,
-        //     eur,
-        // })
+        Ok(Self {
+            usd,
+            gbp,
+            eur,
+        })
     }
 }
