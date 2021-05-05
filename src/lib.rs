@@ -1,5 +1,6 @@
 
 use serde_json::Value;
+use chrono::{DateTime, Utc};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Currency {
@@ -10,7 +11,7 @@ pub struct Currency {
 }
 
 impl Currency {
-    pub fn get(ctype: &str, data: serde_json::Value) -> Result<Self, Error> {
+    pub fn get(ctype: &str, data: Value) -> Result<Self, Error> {
         let code = match &data["bpi"][ctype]["code"] {
             Value::String(output) => output,
             _ => return Err(Error::Format(String::from("Couldn't find code"))),
@@ -66,6 +67,7 @@ impl std::fmt::Display for Error {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Bitcoin {
+    pub time: DateTime<Utc>,
     pub usd: Currency,
     pub gbp: Currency,
     pub eur: Currency,
@@ -78,7 +80,7 @@ impl Bitcoin {
             Err(error) => return Err(Error::Http(error.to_string())),
         };
 
-        let parsed_json: serde_json::Value = match serde_json::from_str(&data) {
+        let parsed_json: Value = match serde_json::from_str(&data) {
             Ok(parsed_json) => parsed_json,
             Err(error) => {
                 return Err(Error::Format(error.to_string()));
@@ -89,7 +91,18 @@ impl Bitcoin {
         let gbp = Currency::get("GBP", parsed_json.clone())?;
         let eur = Currency::get("EUR", parsed_json.clone())?;
 
+        let time = match &parsed_json["time"]["updatedISO"] {
+            Value::String(output) => output,
+            _ => return Err(Error::Format(String::from("Couldn't find updatedISO"))),
+        };
+
+        let time: DateTime<Utc> = match DateTime::parse_from_rfc3339(time) {
+            Ok(time) => DateTime::from(time),
+            Err(error) => return Err(Error::Format(format!("Couldn't format time: {}", error))),
+        };
+
         Ok(Self {
+            time,
             usd,
             gbp,
             eur,
