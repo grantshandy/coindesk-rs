@@ -6,6 +6,7 @@ edition = "2018"
 description = "A Bitcoin price index API powered by coindesk.com"
 keywords = ["price", "index", "bitcoin", "crypto", "cryptocurrency"]
 documentation = "https://docs.rs/coindesk"
+license = "GPL-3.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
