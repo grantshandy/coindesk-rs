@@ -1,4 +1,4 @@
-//! # coindesk-rs
+//! # coindesk
 //! A Bitcoin price index API powered by [coindesk.com](https://coindesk.com).
 //!
 //! ```
