@@ -3,6 +3,8 @@ name = "coindesk"
 version = "0.1.0"
 authors = ["Grant Handy <grantshandy@gmail.com>"]
 edition = "2018"
+description = "A Bitcoin price index API powered by coindesk.com"
+keywords = ["price", "index", "bitcoin", "crypto", "cryptocurrency"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
